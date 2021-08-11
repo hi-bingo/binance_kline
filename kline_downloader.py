@@ -98,7 +98,5 @@ def interval_to_seconds(interval):
 
 
 if __name__ == '__main__':
-    # res = get_support_symbols()
-    download_full_klines("AXS/USDT", "15m", "2021-07-01")
-    # res = get_start_end_pairs("2021-07-01", "2021-08-11", "15m")
-    # print(res)
+    symbols = get_support_symbols()
+    download_full_klines(symbol="BTC/USDT", interval="15m", start="2021-07-01", end="2021-08-01",save_to="path_to_file")
