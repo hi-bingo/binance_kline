@@ -41,7 +41,8 @@ def download_full_klines(symbol, interval, start, end=None, save_to=None, req_in
     klines = []
     for (start_ts, end_ts) in tqdm(start_end_pairs):
         tmp_kline = get_klines(symbol.replace("/", ""), interval, since=start_ts, limit=REQ_LIMIT, to=end_ts)
-        klines.append(tmp_kline)
+        if len(tmp_kline)>0:
+            klines.append(tmp_kline)
         if req_interval:
             time.sleep(req_interval)
 
