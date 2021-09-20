@@ -41,7 +41,7 @@ def download_full_klines(symbol, interval, start, end=None, save_to=None, req_in
     klines = []
     for (start_ts, end_ts) in tqdm(start_end_pairs):
         tmp_kline = get_klines(symbol.replace("/", ""), interval, since=start_ts, limit=REQ_LIMIT, to=end_ts)
-        if len(tmp_kline)>0:
+        if len(tmp_kline) > 0:
             klines.append(tmp_kline)
         if req_interval:
             time.sleep(req_interval)
@@ -49,23 +49,25 @@ def download_full_klines(symbol, interval, start, end=None, save_to=None, req_in
     klines = np.concatenate(klines)
     data = []
     cols = ["open_time", "open", "high", "low", "close", "volume",
-            "close_time", "quote_asset_volume", "number_of_trades",
-            "taker_buy_base_asset_volume", "taker_buy_quote_asset_volume"]
+            "close_time", "value", "trade_cnt",
+            "active_buy_volume", "active_buy_value"]
 
     for i in range(len(klines)):
         tmp_kline = klines[i]
         data.append(tmp_kline[:-1])
 
     df = pd.DataFrame(np.array(data), columns=cols, dtype=np.float)
+    df.drop("close_time", axis=1, inplace=True)
     for col in cols:
-        if ("time" in col) or ("number" in col):
+        if col in ["open_time", "trade_cnt"]:
             df[col] = df[col].astype(np.int)
+    df["open_time"] = pd.to_datetime(df["open_time"], unit="ms")
 
     if dimension == "ohlcv":
         df = df[cols[:6]]
 
-    real_start = datetime.fromtimestamp(df["open_time"].values[0] / 1000).strftime("%Y-%m-%d")
-    real_end = datetime.fromtimestamp(df["open_time"].values[-1] / 1000).strftime("%Y-%m-%d")
+    real_start = df["open_time"].iloc[0].strftime("%Y-%m-%d")
+    real_end = df["open_time"].iloc[-1].strftime("%Y-%m-%d")
 
     if save_to:
         df.to_csv(save_to, index=False)
@@ -100,4 +102,5 @@ def interval_to_seconds(interval):
 
 if __name__ == '__main__':
     symbols = get_support_symbols()
-    download_full_klines(symbol="BTC/USDT", interval="15m", start="2021-07-01", end="2021-08-01",save_to="path_to_file")
+    download_full_klines(symbol="BTC/USDT", interval="15m", start="2021-07-01", end="2021-08-01",
+                         save_to="path_to_file.csv")
